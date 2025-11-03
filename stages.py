@@ -1,14 +1,26 @@
 from datetime import date
 
-STAGES = ['novo']
-DEFAULT_STAGE = 'novo'
+COMPANIES = []
 
-def model_lead(name, company, email):
-    """Cria um lead como um dicionário simples"""
+def model_user(name, data_nasc, idade, tipo_sang, email='', working_on='nenhuma'):
+    if hasattr(data_nasc, 'isoformat'):
+        birthdate = data_nasc.isoformat()
+    else:
+        birthdate = data_nasc
+
     return {
-        "name":name,
-        "company":company,
-        "email":email,
-        "stage":"novo",
-        "created_at":date.today().isoformat()
+        "name": name,
+        "birthdate": birthdate,
+        "age": idade,
+        "email": email,
+        "blood_type": tipo_sang,
+        "working_on": working_on,
+    }
+
+def model_company(name, descr, nota, employees=0):
+    return {
+        "name": name,
+        "caption": descr,
+        "rate": nota,
+        "employees": employees,
     }

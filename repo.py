@@ -1,11 +1,13 @@
 from pathlib import Path
-import json, csv
+import json
+import csv
 
-class LeadRepository:
-    def __init__(self):
-        self.DATA_DIR = Path(__file__).resolve().parent / "data"
+
+class Repository:
+    def __init__(self, file_name: str):
+        self.DATA_DIR = Path(__file__).resolve().parent / 'data'
         self.DATA_DIR.mkdir(exist_ok=True)
-        self.DB_PATH = self.DATA_DIR / "leads.json"
+        self.DB_PATH = self.DATA_DIR / file_name
 
     def _load(self):
         if not self.DB_PATH.exists():
@@ -15,33 +17,44 @@ class LeadRepository:
         except json.JSONDecodeError:
             return []
 
-    def _save(self, leads):
-        self.DB_PATH.write_text(json.dumps(leads, ensure_ascii=False, indent=2), encoding="utf-8")
+    def _save(self, items):
+        self.DB_PATH.write_text(
+            json.dumps(items, ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
 
-    def list_leads(self):
+    def _list(self):
         return self._load()
 
-    def add_lead(self, lead_dict):
-        leads = self._load()
-        leads.append(lead_dict)
-        self._save(leads)
+    def _add_item(self, item_dict):
+        items = self._load()
+        items.append(item_dict)
+        self._save(items)
 
-    def export_csv(self):
-        path_csv = self.DATA_DIR / 'leads.csv'
-        leads = self._load()
+    def _export_csv(self, file_name: str, field_names=None):
+        if field_names is None:
+            field_names = []
+        path_csv = self.DATA_DIR / file_name
+        items = self._load()
         try:
             with path_csv.open('w', newline='', encoding='utf-8') as file:
-                writer = csv.DictWriter(
-                    file,
-                    fieldnames=['name', 'company', 'email', 'stage', 'created_at'],
-                )
-
+                writer = csv.DictWriter(file, fieldnames=field_names)
                 writer.writeheader()
-                for lead in leads:
-                    writer.writerow(lead)
+                for item in items:
+                    writer.writerow(item)
 
             return path_csv
-        
+
         except PermissionError as e:
-            """Caso o arquivo esteja aberto em outro programa"""
             print(f'Erro maldito: {e}')
+            return None
+
+
+class UserRepository(Repository):
+    def __init__(self, file_name: str = 'users.json'):
+        super().__init__(file_name)
+
+
+class CompanyRepository(Repository):
+    def __init__(self, file_name: str = 'companies.json'):
+        super().__init__(file_name)
