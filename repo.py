@@ -2,7 +2,6 @@ from pathlib import Path
 import json
 import csv
 
-
 class Repository:
     def __init__(self, file_name: str):
         self.DATA_DIR = Path(__file__).resolve().parent / 'data'
@@ -49,11 +48,9 @@ class Repository:
             print(f'Erro maldito: {e}')
             return None
 
-
 class UserRepository(Repository):
     def __init__(self, file_name: str = 'users.json'):
         super().__init__(file_name)
-
 
 class CompanyRepository(Repository):
     def __init__(self, file_name: str = 'companies.json'):

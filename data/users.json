@@ -6,5 +6,29 @@
     "email": "leopiassa@email.com",
     "blood_type": "B+",
     "working_on": "procurando"
+  },
+  {
+    "name": "Isabelle Dias Belini",
+    "birthdate": "2006-02-05",
+    "age": 19,
+    "email": "isabelini@email.com",
+    "blood_type": "A-",
+    "working_on": "procurando"
+  },
+  {
+    "name": "Carolina Bernardo",
+    "birthdate": "1997-04-23",
+    "age": 28,
+    "email": "carolzinha@email.com",
+    "blood_type": "B+",
+    "working_on": "itzon"
+  },
+  {
+    "name": "Papai Russi",
+    "birthdate": "1999-08-14",
+    "age": 26,
+    "email": "papai.russi@fiap.com.br",
+    "blood_type": "A+",
+    "working_on": "fiap"
   }
 ]

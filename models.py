@@ -1,6 +1,5 @@
 from datetime import date
 
-
 class Company:
     def __init__(self, nome: str, descr: str):
         self.nome = nome
@@ -32,7 +31,6 @@ class Company:
             "rate": self._media_notas(),
             "employees": self._get_employees(),
         }
-
 
 class Usuario:
     def __init__(self, nome: str, data_nasc: date, tipo_sang: str, email: str, working_on: str):

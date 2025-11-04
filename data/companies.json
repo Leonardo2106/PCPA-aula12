@@ -1,0 +1,14 @@
+[
+  {
+    "name": "FIAP",
+    "caption": "Faculdade de Informática e Administração Paulista",
+    "rate": 5.0,
+    "employees": 3
+  },
+  {
+    "name": "Itzon",
+    "caption": "Arquitetura",
+    "rate": 5.0,
+    "employees": 1
+  }
+]

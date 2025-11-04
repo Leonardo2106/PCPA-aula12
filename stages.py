@@ -1,6 +1,6 @@
 from datetime import date
-
-COMPANIES = []
+from pathlib import Path
+from repo import CompanyRepository, UserRepository
 
 def model_user(name, data_nasc, idade, tipo_sang, email='', working_on='nenhuma'):
     if hasattr(data_nasc, 'isoformat'):

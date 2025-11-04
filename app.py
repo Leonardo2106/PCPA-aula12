@@ -1,23 +1,68 @@
 from models import Usuario, Company
 from repo import UserRepository, CompanyRepository
-from stages import COMPANIES
 from datetime import datetime
 
 user_backend = UserRepository('users.json')
 company_backend = CompanyRepository('companies.json')
 
+COMPANIES_LIST = []
+
+def sync_employees_from_users():
+    employees = user_backend._list()
+    companies = company_backend._list()
+
+    counts = {}
+
+    for u in employees:
+        company_name = u.get('working_on', '')
+        if not company_name:
+            continue
+
+        company_name = company_name.strip().lower()
+        if company_name in ('nenhuma', 'procurando'):
+            continue
+
+        counts[company_name] = counts.get(company_name, 0) + 1
+
+    for c in companies:
+        name = c.get("name", "")
+        key = name.strip().lower()
+        c["employees"] = counts.get(key, 0)
+
+    company_backend._save(companies)
+
+
+def load_companies_list():
+    global COMPANIES_LIST
+    COMPANIES_LIST = []
+
+    companies = company_backend._list()
+    for c in companies:
+        name = c.get('name', '')
+        if name:
+            COMPANIES_LIST.append(name.strip().lower())
+
 def add_user():
+    load_companies_list()
+
     nome = input('\nNome completo:\t')
     data_str = input('Data de nascimento (DD/MM/AAAA):\t')
     tipo_sang = input('Tipo sanguíneo (ex: O+, A-, B+)::\t')
     email = input('E-mail:\t')
+
+    if COMPANIES_LIST:
+        print('\nEmpresas cadastradas:')
+        for company in COMPANIES_LIST:
+            print(f'- {company}')
+    else:
+        print('\nNenhuma empresa cadastrada ainda.')
 
     company_input = input('Empresa que trabalha (nenhuma/procurando):\t').strip().lower()
 
     if company_input in ('nenhuma', 'procurando'):
         working_on = company_input
     else:
-        if company_input not in COMPANIES:
+        if company_input not in COMPANIES_LIST:
             print(f'\nNenhuma empresa com o nome: "{company_input}" encontrada. Mesmo assim vou salvar esse nome.')
         working_on = company_input
 
@@ -33,7 +78,11 @@ def add_user():
     user_backend._add_item(modeled_user)
     print('\nUsuário adicionado com sucesso')
 
+    sync_employees_from_users()
+
 def add_company():
+    global COMPANIES_LIST
+
     nome = input('\nNome da empresa:\t')
     descr = input('Breve descrição:\t')
     try:
@@ -46,11 +95,16 @@ def add_company():
     company._dar_nota(nota_input)
 
     modeled_company = company.model_company()
-
     company_backend._add_item(modeled_company)
-    if nome.lower() not in COMPANIES:
-        COMPANIES.append(nome.lower())
+
+    load_companies_list()
+
+    if nome.strip().lower() not in COMPANIES_LIST:
+        COMPANIES_LIST.append(nome.strip().lower())
+
     print('\nEmpresa adicionada com sucesso')
+
+    sync_employees_from_users()
 
 def list_user():
     users = user_backend._list()
@@ -58,13 +112,13 @@ def list_user():
         print('Nenhum usuário carregado')
         return
 
-    print(f'\n## | {"Name":<20} | {"Age":<5} | {"Email":<30} | {"Working on":<20}')
+    print(f'\n## | {"Name":<40} | {"Age":<10} | {"Email":<40} | {"Working on":<20}')
     for i, l in enumerate(users):
         name = l.get("name", "")
         age = l.get("age", "")
         email = l.get("email", "")
         working_on = l.get("working_on", "")
-        print(f'{i:02d} | {name:<20} | {str(age):<5} | {email:<30} | {working_on:<20}')
+        print(f'{i:02d} | {name:<40} | {str(age):<10} | {email:<40} | {working_on:<20}')
 
 def list_company():
     companies = company_backend._list()
@@ -72,13 +126,13 @@ def list_company():
         print('Nenhuma empresa carregada')
         return
 
-    print(f'\n## | {"Name":<20} | {"Caption":<30} | {"Rate":<5} | {"Employees":<10}')
+    print(f'\n## | {"Name":<25} | {"Caption":<50} | {"Rate":<10} | {"Employees":<10}')
     for i, l in enumerate(companies):
         name = l.get("name", "")
         caption = l.get("caption", "")
         rate = l.get("rate", "")
         employees = l.get("employees", "")
-        print(f'{i:02d} | {name:<20} | {caption:<30} | {str(rate):<5} | {str(employees):<10}')
+        print(f'{i:02d} | {name:<25} | {caption:<50} | {str(rate):<10} | {str(employees):<10}')
 
 def search_company():
     input_search = input('Buscar por:\t').strip().lower()
@@ -100,13 +154,13 @@ def search_company():
         print('\nNada encontrado')
         return
 
-    print(f'\n## | {"Name":<20} | {"Caption":<30} | {"Rate":<5} | {"Employees":<10}')
+    print(f'\n## | {"Name":<25} | {"Caption":<50} | {"Rate":<10} | {"Employees":<10}')
     for i, l in enumerate(results):
         name = l.get("name", "")
         caption = l.get("caption", "")
         rate = l.get("rate", "")
         employees = l.get("employees", "")
-        print(f'{i:02d} | {name:<20} | {caption:<30} | {str(rate):<5} | {str(employees):<10}')
+        print(f'{i:02d} | {name:<25} | {caption:<50} | {str(rate):<10} | {str(employees):<10}')
 
 def search_user():
     input_search = input('Buscar por:\t').strip().lower()
@@ -128,13 +182,13 @@ def search_user():
         print('\nNada encontrado')
         return
 
-    print(f'\n## | {"Name":<20} | {"Age":<5} | {"Email":<30} | {"Working on":<20}')
+    print(f'\n## | {"Name":<40} | {"Age":<10} | {"Email":<40} | {"Working on":<20}')
     for i, l in enumerate(results):
         name = l.get("name", "")
         age = l.get("age", "")
         email = l.get("email", "")
         working_on = l.get("working_on", "")
-        print(f'{i:02d} | {name:<20} | {str(age):<5} | {email:<30} | {working_on:<20}')
+        print(f'{i:02d} | {name:<40} | {str(age):<10} | {email:<40} | {working_on:<20}')
 
 def to_csv(backend, file_name, field_names=None):
     if field_names is None:
@@ -146,6 +200,9 @@ def to_csv(backend, file_name, field_names=None):
         print(f'Sucesso! CSV Exportado para: {path_csv}')
 
 def main():
+    load_companies_list()
+    sync_employees_from_users()
+
     while True:
         _main_menu()
         try:
@@ -235,7 +292,6 @@ def _users_menu():
     print('[2] List users')
     print('[3] Search user')
     print('[4] Export to `.csv`')
-
     print('\n[5] Back')
 
 def _companies_menu():
@@ -243,17 +299,13 @@ def _companies_menu():
     print('[2] List companies')
     print('[3] Search company')
     print('[4] Export to `.csv`')
-
     print('\n[5] Back')
 
 def _main_menu():
     print('\nMINI CRM - Adicionar/Listar com OO')
-
     print('\n[1] Users')
     print('[2] Companies')
-
     print('\n[3] Sair')
-
 
 if __name__ == '__main__':
     main()
